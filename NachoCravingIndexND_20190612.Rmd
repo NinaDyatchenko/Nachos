@@ -24,10 +24,13 @@ pre {
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+
 ---
 Downloading data from REDCap
 ---
 ```{r include=FALSE}
+# the output will not be shown in the html link
+
 #Clear existing data and graphics
 rm(list=ls())
 graphics.off()
@@ -116,8 +119,12 @@ levels(data$nci_complete.factor)=c("Incomplete","Unverified","Complete")
 ```
 
 
-Describe the variable: “When did you last eat nachos?” using a well-formatted table.
+Describe the variable: “When did you last eat nachos?” 
+using a well-formatted table.
+
 ```{r include=FALSE}
+# taybull funation will make a pretty table and 
+# use pretty label for the variable of interest
 
 library(stringr)
 library(janitor)
@@ -130,6 +137,7 @@ taybull <- function(variable, subset = FALSE) {
     } else {
       cat(paste(theLab2, "\n"))
     }
+  # Creating lable for the variable
   Response <- as.name(paste0(deparse(substitute(variable)), ".factor"))
   Response <- eval(parse(text = Response))
   tabyl(Response)
@@ -137,6 +145,8 @@ taybull <- function(variable, subset = FALSE) {
 ```
 
 ```{r comment=NA,echo=FALSE}
+# the output will be displayed in the html link w/o ## comment signs
+
 taybull(data$last) %>% 
   adorn_pct_formatting(digits = 0)
 ```
@@ -179,23 +189,21 @@ data <- data %>%
               TRUE ~ "."),
     case_when(ingredients___8 == 0 ~ "_",
               ingredients___8 == 1 ~ "P",  # Peppers
-              TRUE ~ ".")
+              TRUE ~ ".") 
+    
   ))
+
 ```
 
 ```{r comment=NA,echo=FALSE}
-#factor(data$word)
-#label(data$word)="What ingredients do you currently crave?"
+# Need to create the label for Word variable separately
 
-#data$word.factor = factor(data$word,levels=c("0","1"))
+label(data$word)= "What ingredients do you currently crave?"
+data$word.factor = as.factor(data$word)
 
-tabyl(data$word) %>%
+taybull(data$word) %>%
   adorn_pct_formatting(digits = 1)
 
-#taybull(data$word) %>%
- # adorn_pct_formatting(digits = 1)
-
-#names(data$word) <- "New"
 ```
 
 
