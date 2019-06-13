@@ -1,0 +1,217 @@
+---
+title: 'Nachos by Nina Dyatchenko'
+subtitle: 'BST692'
+date: "`r format(Sys.time(), '%B %d %Y')`"
+output: html_document
+---
+
+---
+Comments: Seting Report borders style
+---
+<style type = "text/css"> ### 
+  .main-container {
+    max-width: 1800px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+pre {
+  border: 0;
+}
+</style>
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+---
+Downloading data from REDCap
+---
+```{r include=FALSE}
+#Clear existing data and graphics
+rm(list=ls())
+graphics.off()
+
+#Load Hmisc library
+library(Hmisc)
+
+#Read Data
+data = read.csv('NachoCravingIndex_DATA_2019-06-12_1449.csv')
+
+#Setting Labels
+label(data$record_id)="Record ID"
+label(data$nci_timestamp)="Survey Timestamp"
+label(data$nachos)="Have you ever eaten nachos?"
+label(data$treat)="I use nachos to treat a medical condition (other than hunger)."
+label(data$treating)="What is the primary problem that nachos are treating?"
+label(data$othercondition)="What other condition?"
+label(data$last)="When did you last eat nachos?"
+label(data$traveled)="Have you traveled somewhere specifically to get nachos?"
+label(data$miles)="What is the farthest distance (in miles) you have traveled toget nachos? A calculator to convert kilometers to miles is here."
+label(data$now)="Are you currently craving nachos?"
+label(data$strong)="How extreme is your current nacho craving?"
+label(data$ingredients___1)="What ingredients do you currently crave? (choice=Chips)"
+label(data$ingredients___2)="What ingredients do you currently crave? (choice=Yellow cheese)"
+label(data$ingredients___3)="What ingredients do you currently crave? (choice=Orange cheese)"
+label(data$ingredients___4)="What ingredients do you currently crave? (choice=White cheese)"
+label(data$ingredients___5)="What ingredients do you currently crave? (choice=Meat)"
+label(data$ingredients___6)="What ingredients do you currently crave? (choice=Beans)"
+label(data$ingredients___7)="What ingredients do you currently crave? (choice=Tomatoes)"
+label(data$ingredients___8)="What ingredients do you currently crave? (choice=Peppers)"
+label(data$cheese)="The cheesy goodness"
+label(data$crunch)="The crunchy goodness"
+label(data$bean)="The beany goodness"
+label(data$guacamole)="The guacamole goodness"
+label(data$jalapeno)="The jalapeno goodness"
+label(data$meat)="The meaty goodness"
+label(data$life)="How have nachos changed your life?"
+label(data$nci_complete)="Complete?"
+#Setting Units
+
+
+#Setting Factors(will create new variable for factors)
+data$nachos.factor = factor(data$nachos,levels=c("1","0"))
+data$treat.factor = factor(data$treat,levels=c("1","0"))
+data$treating.factor = factor(data$treating,levels=c("1","2","3"))
+data$last.factor = factor(data$last,levels=c("1","2","3","4","5","6"))
+data$traveled.factor = factor(data$traveled,levels=c("1","0"))
+data$now.factor = factor(data$now,levels=c("1","0"))
+data$ingredients___1.factor = factor(data$ingredients___1,levels=c("0","1"))
+data$ingredients___2.factor = factor(data$ingredients___2,levels=c("0","1"))
+data$ingredients___3.factor = factor(data$ingredients___3,levels=c("0","1"))
+data$ingredients___4.factor = factor(data$ingredients___4,levels=c("0","1"))
+data$ingredients___5.factor = factor(data$ingredients___5,levels=c("0","1"))
+data$ingredients___6.factor = factor(data$ingredients___6,levels=c("0","1"))
+data$ingredients___7.factor = factor(data$ingredients___7,levels=c("0","1"))
+data$ingredients___8.factor = factor(data$ingredients___8,levels=c("0","1"))
+data$cheese.factor = factor(data$cheese,levels=c("1","2","3","4","5"))
+data$crunch.factor = factor(data$crunch,levels=c("1","2","3","4","5"))
+data$bean.factor = factor(data$bean,levels=c("1","2","3","4","5"))
+data$guacamole.factor = factor(data$guacamole,levels=c("1","2","3","4","5"))
+data$jalapeno.factor = factor(data$jalapeno,levels=c("1","2","3","4","5"))
+data$meat.factor = factor(data$meat,levels=c("1","2","3","4","5"))
+data$nci_complete.factor = factor(data$nci_complete,levels=c("0","1","2"))
+
+levels(data$nachos.factor)=c("Yes","No")
+levels(data$treat.factor)=c("True","False")
+levels(data$treating.factor)=c("Asthma","Cancer","Other")
+levels(data$last.factor)=c("I am currently eating nachos.","I ate nachos earlier today.","I ate nachos this week.","I ate nachos in the last month.","I ate nachos in the last year.","I ate nachos more than a year ago.")
+levels(data$traveled.factor)=c("Yes","No")
+levels(data$now.factor)=c("Yes","No")
+levels(data$ingredients___1.factor)=c("Unchecked","Checked")
+levels(data$ingredients___2.factor)=c("Unchecked","Checked")
+levels(data$ingredients___3.factor)=c("Unchecked","Checked")
+levels(data$ingredients___4.factor)=c("Unchecked","Checked")
+levels(data$ingredients___5.factor)=c("Unchecked","Checked")
+levels(data$ingredients___6.factor)=c("Unchecked","Checked")
+levels(data$ingredients___7.factor)=c("Unchecked","Checked")
+levels(data$ingredients___8.factor)=c("Unchecked","Checked")
+levels(data$cheese.factor)=c("1 Dont like","2","3 Neutral","4","5 Love it")
+levels(data$crunch.factor)=c("1 Dont like","2","3 Neutral","4","5 Love it")
+levels(data$bean.factor)=c("1 Dont like","2","3 Neutral","4","5 Love it")
+levels(data$guacamole.factor)=c("1 Dont like","2","3 Neutral","4","5 Love it")
+levels(data$jalapeno.factor)=c("1 Dont like","2","3 Neutral","4","5 Love it")
+levels(data$meat.factor)=c("1 Dont like","2","3 Neutral","4","5 Love it")
+levels(data$nci_complete.factor)=c("Incomplete","Unverified","Complete")
+```
+
+
+Describe the variable: “When did you last eat nachos?” using a well-formatted table.
+```{r include=FALSE}
+
+library(stringr)
+library(janitor)
+
+taybull <- function(variable, subset = FALSE) {
+  theLab <- label(variable)
+  theLab2 <- str_sub(theLab, str_locate(theLab, "=")[,1]+1, str_locate(theLab, "\\)")[,1]-1)
+  if(subset == FALSE){ 
+      cat(paste(theLab, "\n"))
+    } else {
+      cat(paste(theLab2, "\n"))
+    }
+  Response <- as.name(paste0(deparse(substitute(variable)), ".factor"))
+  Response <- eval(parse(text = Response))
+  tabyl(Response)
+}
+```
+
+```{r comment=NA,echo=FALSE}
+taybull(data$last) %>% 
+  adorn_pct_formatting(digits = 0)
+```
+
+Make a binary word of the pattern for “What ingredients do you currently crave?” <br/>
+C - Chips <br/>
+Y - Yellow cheese <br/>
+O - Orange cheese <br/>
+W - White cheese <br/>
+M - Meet <br/>
+B - Beans <br/>
+T - Tomatoes <br/>
+P - Peppers <br/>
+
+```{r include=FALSE}
+
+library(dplyr)
+data <- data %>%
+  mutate(word = paste0(
+    case_when(ingredients___1 == 0 ~ "_",
+              ingredients___1 == 1 ~ "C",  # Chips
+              TRUE ~ "."),
+    case_when(ingredients___2 == 0 ~ "_",
+              ingredients___2 == 1 ~ "Y",  # Yellow cheese
+              TRUE ~ "."),
+    case_when(ingredients___3 == 0 ~ "_",
+              ingredients___3 == 1 ~ "O",  # Orange cheese
+              TRUE ~ "."),
+    case_when(ingredients___4 == 0 ~ "_",
+              ingredients___4 == 1 ~ "W",  # White cheese
+              TRUE ~ "."),
+    case_when(ingredients___5 == 0 ~ "_",
+              ingredients___5 == 1 ~ "M",  # Meet
+              TRUE ~ "."),
+    case_when(ingredients___6 == 0 ~ "_",
+              ingredients___6 == 1 ~ "B",  # Beans
+              TRUE ~ "."),
+    case_when(ingredients___7 == 0 ~ "_",
+              ingredients___7 == 1 ~ "T",  # Tomatos
+              TRUE ~ "."),
+    case_when(ingredients___8 == 0 ~ "_",
+              ingredients___8 == 1 ~ "P",  # Peppers
+              TRUE ~ ".")
+  ))
+```
+
+```{r comment=NA,echo=FALSE}
+#factor(data$word)
+#label(data$word)="What ingredients do you currently crave?"
+
+#data$word.factor = factor(data$word,levels=c("0","1"))
+
+tabyl(data$word) %>%
+  adorn_pct_formatting(digits = 1)
+
+#taybull(data$word) %>%
+ # adorn_pct_formatting(digits = 1)
+
+#names(data$word) <- "New"
+```
+
+
+---
+Creating dataset using Miami.edu API Token
+---
+
+```{r include=FALSE}
+
+library(redcapAPI)
+rcon <- redcapConnection(url = 'https://redcap.miami.edu/api/', 
+                         token = '2D82594D583F3F1CA719EC868197F9BD')
+
+# Creating the exported data:
+data2 <- exportRecords(rcon)
+```
+
+
+
